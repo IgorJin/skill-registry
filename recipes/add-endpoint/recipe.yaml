@@ -1,0 +1,12 @@
+id: add-endpoint
+name: Add Endpoint
+version: 0.1.0
+description: Add a backend API endpoint with validation, service behavior, and tests.
+tags: [api, backend, endpoint]
+uses:
+  skills: [backend-architecture, testing]
+  patterns: [architecture-first, plan-then-code, generate-small]
+  checklists: [backend-review, testing-review]
+  workflow: feature-development
+requiredFiles: [README.md, steps.md, prompt.md]
+entrypoint: prompt.md

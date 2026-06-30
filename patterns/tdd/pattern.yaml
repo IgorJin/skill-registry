@@ -1,0 +1,6 @@
+id: tdd
+name: TDD
+version: 0.1.0
+description: Use tests to define or protect behavior before implementation when practical.
+tags: [testing, regression]
+entrypoint: prompt.md

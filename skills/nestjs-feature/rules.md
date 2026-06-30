@@ -1,0 +1,4 @@
+- Inspect existing module conventions before creating new files.
+- Do not introduce a new module when an existing bounded context owns the behavior.
+- Avoid leaking ORM entities into request or response contracts.
+- Update tests and docs near the changed feature.

@@ -1,0 +1,4 @@
+- Prioritize correctness, security, data loss, and regressions.
+- Ground every finding in specific code evidence.
+- Distinguish blocking issues from style preferences.
+- Keep summaries shorter than actionable findings.

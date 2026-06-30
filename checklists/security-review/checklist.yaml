@@ -1,0 +1,6 @@
+id: security-review
+name: Security Review
+version: 0.1.0
+description: Security checklist for authentication, authorization, data exposure, and unsafe inputs.
+tags: [security, review]
+entrypoint: checklist.md

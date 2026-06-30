@@ -1,0 +1,4 @@
+- Putting business rules in decorators, guards, or controllers.
+- Returning raw persistence entities from API handlers.
+- Creating broad shared modules for one feature.
+- Mocking so much in tests that behavior is no longer verified.

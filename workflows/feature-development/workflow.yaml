@@ -1,0 +1,30 @@
+id: feature-development
+name: Feature Development
+version: 0.1.0
+description: Build a feature from repository analysis through implementation and verification.
+tags: [feature, workflow]
+requiredFiles: [README.md, steps.md]
+steps:
+  - id: analyze
+    title: Analyze Context
+    description: Inspect existing ownership, conventions, contracts, and tests before editing.
+    uses:
+      skills: [backend-architecture]
+      patterns: [architecture-first]
+  - id: plan
+    title: Plan Change
+    description: Define a small implementation plan and verification path.
+    uses:
+      patterns: [plan-then-code, minimal-diff]
+  - id: implement
+    title: Implement
+    description: Make the smallest coherent change with local tests.
+    uses:
+      patterns: [generate-small]
+      checklists: [backend-review, testing-review]
+  - id: verify
+    title: Verify
+    description: Run relevant tests and review quality risks.
+    uses:
+      skills: [testing, code-review]
+      checklists: [testing-review]

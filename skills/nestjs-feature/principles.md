@@ -1,0 +1,4 @@
+- Keep controllers thin and application services focused.
+- Put validation at the edge using DTOs, pipes, or explicit schemas.
+- Keep persistence and external integrations behind injectable adapters.
+- Favor feature-local tests that document behavior.

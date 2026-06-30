@@ -1,0 +1,6 @@
+id: minimal-diff
+name: Minimal Diff
+version: 0.1.0
+description: Preserve existing style and minimize unnecessary churn.
+tags: [maintenance, review]
+entrypoint: prompt.md

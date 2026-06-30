@@ -1,0 +1,5 @@
+- [ ] Authentication assumptions are clear.
+- [ ] Authorization checks protect tenant and owner boundaries.
+- [ ] Secrets are not logged, returned, or committed.
+- [ ] User input is validated before persistence or external calls.
+- [ ] Sensitive data exposure is minimized.

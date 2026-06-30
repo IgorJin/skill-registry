@@ -1,0 +1,4 @@
+- [ ] Findings are evidence-based.
+- [ ] Severity matches user impact.
+- [ ] Tests and edge cases are considered.
+- [ ] Security and data handling risks are checked.

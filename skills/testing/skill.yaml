@@ -1,0 +1,13 @@
+id: testing
+name: Testing
+version: 0.1.0
+description: Design focused tests that prove important behavior without overfitting implementation details.
+category: engineering
+tags: [testing, quality, automation]
+models: [chatgpt, codex, claude-code]
+capabilities: [testing, debugging, planning]
+dependsOn:
+  patterns: [tdd, generate-small]
+  checklists: [testing-review]
+requiredFiles: [README.md, principles.md, rules.md, prompt.md, checklist.md, anti-patterns.md]
+entrypoint: prompt.md

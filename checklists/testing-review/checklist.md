@@ -1,0 +1,5 @@
+- [ ] Tests cover the main success path.
+- [ ] Tests cover at least one meaningful failure or edge case.
+- [ ] Assertions verify outcomes, not implementation trivia.
+- [ ] Mocks are limited to external boundaries.
+- [ ] Tests are deterministic and can run locally.

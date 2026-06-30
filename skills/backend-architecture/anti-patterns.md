@@ -1,0 +1,4 @@
+- Mixing transport DTOs directly into domain logic.
+- Adding global state to avoid passing dependencies explicitly.
+- Creating abstractions before duplication or complexity exists.
+- Hiding database, network, or queue side effects in utility functions.

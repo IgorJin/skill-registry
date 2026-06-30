@@ -1,0 +1,4 @@
+- Test observable behavior, not private implementation details.
+- Keep setup small and relevant to the behavior under test.
+- Include edge cases that are likely to break in production.
+- Prefer deterministic tests over timing or network assumptions.

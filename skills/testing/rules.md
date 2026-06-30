@@ -1,0 +1,4 @@
+- Name the behavior being verified.
+- Use existing test helpers and conventions.
+- Add regression tests before or alongside fixes.
+- Keep mocks at system boundaries.

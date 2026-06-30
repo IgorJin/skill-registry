@@ -1,0 +1,4 @@
+- Treating personal style as a defect.
+- Reviewing only the changed lines when nearby contracts matter.
+- Giving vague advice without a failing scenario.
+- Burying critical issues under a long summary.

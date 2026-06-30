@@ -1,0 +1,4 @@
+- [ ] Tests fail for the intended regression.
+- [ ] Assertions check meaningful outcomes.
+- [ ] Setup is readable and local.
+- [ ] Flaky timing or external services are avoided.

@@ -1,0 +1,6 @@
+id: generate-small
+name: Generate Small
+version: 0.1.0
+description: Prefer small, reviewable changes over broad generation.
+tags: [code-generation, maintainability]
+entrypoint: prompt.md

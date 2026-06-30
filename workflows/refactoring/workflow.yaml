@@ -1,0 +1,29 @@
+id: refactoring
+name: Refactoring
+version: 0.1.0
+description: Improve structure while preserving behavior and minimizing risk.
+tags: [refactoring, maintainability]
+requiredFiles: [README.md, steps.md]
+steps:
+  - id: map-behavior
+    title: Map Behavior
+    description: Identify existing behavior and the tests that protect it.
+    uses:
+      skills: [testing]
+      patterns: [architecture-first]
+  - id: choose-scope
+    title: Choose Scope
+    description: Keep the refactor bounded to one clear responsibility.
+    uses:
+      patterns: [minimal-diff]
+  - id: transform
+    title: Transform
+    description: Move or simplify code in small steps with behavior preserved.
+    uses:
+      patterns: [generate-small]
+  - id: verify
+    title: Verify
+    description: Run tests and review behavior parity.
+    uses:
+      skills: [code-review]
+      checklists: [testing-review]

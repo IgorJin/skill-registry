@@ -1,0 +1,4 @@
+- Define inputs, outputs, ownership, and side effects before writing code.
+- Keep database access behind a clear persistence boundary.
+- Avoid introducing framework-specific concepts into domain logic.
+- Include migration, rollback, and observability notes for risky changes.

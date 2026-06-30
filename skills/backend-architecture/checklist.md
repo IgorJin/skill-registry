@@ -1,0 +1,5 @@
+- [ ] Boundaries and ownership are clear.
+- [ ] Public contracts are documented or discoverable.
+- [ ] Error handling is explicit.
+- [ ] Tests cover the important behavior and edge cases.
+- [ ] Operational risks are named.

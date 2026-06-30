@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill",
+  "type": "object",
+  "required": ["id", "name", "version", "description", "category", "tags", "models", "capabilities", "requiredFiles", "entrypoint"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "minLength": 1 },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "models": { "type": "array", "items": { "type": "string" } },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "dependsOn": { "$ref": "#/$defs/dependsOn" },
+    "requiredFiles": { "type": "array", "items": { "type": "string" } },
+    "entrypoint": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "dependsOn": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "patterns": { "type": "array", "items": { "type": "string" } },
+        "checklists": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

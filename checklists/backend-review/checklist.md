@@ -1,0 +1,5 @@
+- [ ] Inputs are validated at the boundary.
+- [ ] Authorization and ownership checks are explicit.
+- [ ] Persistence changes are intentional and transactional where needed.
+- [ ] Errors are mapped to useful responses or retry behavior.
+- [ ] Logs, metrics, or traces exist for important failure modes.

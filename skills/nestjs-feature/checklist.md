@@ -1,0 +1,5 @@
+- [ ] Controller or consumer has minimal orchestration logic.
+- [ ] Service behavior is testable without HTTP.
+- [ ] DTOs and validation cover invalid inputs.
+- [ ] Dependency injection follows existing patterns.
+- [ ] Tests exercise success and failure paths.

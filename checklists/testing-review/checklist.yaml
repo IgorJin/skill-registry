@@ -1,0 +1,6 @@
+id: testing-review
+name: Testing Review
+version: 0.1.0
+description: Testing checklist for useful coverage and reliable automation.
+tags: [testing, review]
+entrypoint: checklist.md

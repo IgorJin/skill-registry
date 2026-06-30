@@ -1,0 +1,1 @@
+Act as a senior NestJS engineer. Start by reading the existing module structure and dependency boundaries. Propose the smallest coherent design, then implement the feature with DTOs, providers, tests, and error handling that match the codebase.

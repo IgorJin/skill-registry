@@ -1,0 +1,29 @@
+id: bug-fix
+name: Bug Fix
+version: 0.1.0
+description: Reproduce, isolate, fix, and verify a defect with regression coverage.
+tags: [bugfix, testing]
+requiredFiles: [README.md, steps.md]
+steps:
+  - id: reproduce
+    title: Reproduce
+    description: Find or create the smallest failing scenario.
+    uses:
+      skills: [testing]
+      patterns: [tdd]
+  - id: isolate
+    title: Isolate Cause
+    description: Trace the failure to the narrowest responsible behavior.
+    uses:
+      patterns: [plan-then-code]
+  - id: fix
+    title: Fix
+    description: Apply the smallest safe correction.
+    uses:
+      patterns: [generate-small, minimal-diff]
+  - id: review
+    title: Review
+    description: Verify regression coverage and side effects.
+    uses:
+      skills: [code-review]
+      checklists: [testing-review]

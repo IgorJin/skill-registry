@@ -1,0 +1,4 @@
+- Snapshotting large outputs without intent.
+- Mocking the function being tested.
+- Testing private method names instead of behavior.
+- Adding slow integration tests for simple pure logic.

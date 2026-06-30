@@ -1,0 +1,6 @@
+id: plan-then-code
+name: Plan Then Code
+version: 0.1.0
+description: Make a short implementation plan before editing.
+tags: [planning, execution]
+entrypoint: prompt.md

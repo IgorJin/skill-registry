@@ -1,0 +1,4 @@
+- Prefer explicit module boundaries over implicit shared state.
+- Keep transport, application, domain, and infrastructure concerns separate.
+- Design contracts before implementation details.
+- Make failure modes visible through validation, logging, and tests.

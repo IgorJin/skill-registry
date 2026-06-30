@@ -1,0 +1,12 @@
+id: create-react-component
+name: Create React Component
+version: 0.1.0
+description: Create a React component that follows existing UI conventions and includes useful tests.
+tags: [react, frontend, component]
+uses:
+  skills: [testing]
+  patterns: [plan-then-code, generate-small, minimal-diff]
+  checklists: [testing-review]
+  workflow: feature-development
+requiredFiles: [README.md, steps.md, prompt.md]
+entrypoint: prompt.md

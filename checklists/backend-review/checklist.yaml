@@ -1,0 +1,6 @@
+id: backend-review
+name: Backend Review
+version: 0.1.0
+description: Backend quality checklist for API, service, persistence, and operational behavior.
+tags: [backend, review, quality]
+entrypoint: checklist.md

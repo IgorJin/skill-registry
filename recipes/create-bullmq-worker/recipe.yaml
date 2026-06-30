@@ -1,0 +1,12 @@
+id: create-bullmq-worker
+name: Create BullMQ Worker
+version: 0.1.0
+description: Create a BullMQ worker or processor with idempotent behavior and operational checks.
+tags: [bullmq, queue, worker, backend]
+uses:
+  skills: [backend-architecture, testing]
+  patterns: [architecture-first, minimal-diff]
+  checklists: [backend-review, security-review, testing-review]
+  workflow: feature-development
+requiredFiles: [README.md, steps.md, prompt.md]
+entrypoint: prompt.md

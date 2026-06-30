@@ -1,0 +1,13 @@
+id: backend-architecture
+name: Backend Architecture
+version: 0.1.0
+description: Design backend systems with clear boundaries, explicit contracts, and operationally safe defaults.
+category: backend
+tags: [backend, architecture, api, reliability]
+models: [chatgpt, codex, claude-code]
+capabilities: [architecture, planning, code-review, testing]
+dependsOn:
+  patterns: [architecture-first, minimal-diff]
+  checklists: [backend-review, security-review]
+requiredFiles: [README.md, principles.md, rules.md, prompt.md, checklist.md, anti-patterns.md]
+entrypoint: prompt.md

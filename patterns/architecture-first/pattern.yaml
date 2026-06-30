@@ -1,0 +1,6 @@
+id: architecture-first
+name: Architecture First
+version: 0.1.0
+description: Start with boundaries, contracts, and risks before implementation.
+tags: [architecture, planning, context]
+entrypoint: prompt.md

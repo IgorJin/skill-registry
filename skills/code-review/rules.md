@@ -1,0 +1,4 @@
+- Lead with findings ordered by severity.
+- Include file and line references when available.
+- Call out missing tests only when they create real risk.
+- Do not rewrite the patch unless asked.
