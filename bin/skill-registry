@@ -57,19 +57,13 @@ render_prompt() {
   local task="$2"
   local mode_file="$SKILLS_DIR/$mode.md"
 
+  ACTIVE_SKILLS_CONTENT="$(printf '### Core\n\n%s\n\n### %s\n\n%s\n' "$(cat "$SKILLS_DIR/core.md")" "$mode" "$(cat "$mode_file")")" \
   PROJECT_CONTEXT_CONTENT="$(read_project_context)" \
-  CORE_CONTENT="$(cat "$SKILLS_DIR/core.md")" \
-  MODE_CONTENT="$(cat "$mode_file")" \
   TASK_CONTENT="$task" \
-  PROJECT_DIR_CONTENT="$PROJECT_DIR" \
-  SKILL_REGISTRY_HOME_CONTENT="$SKILL_REGISTRY_HOME" \
   perl -0pe '
     s/\{\{PROJECT_CONTEXT\}\}/$ENV{PROJECT_CONTEXT_CONTENT}/g;
-    s/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g;
-    s/\{\{MODE\}\}/$ENV{MODE_CONTENT}/g;
+    s/\{\{ACTIVE_SKILLS\}\}/$ENV{ACTIVE_SKILLS_CONTENT}/g;
     s/\{\{TASK\}\}/$ENV{TASK_CONTENT}/g;
-    s/\{\{PROJECT_DIR\}\}/$ENV{PROJECT_DIR_CONTENT}/g;
-    s/\{\{SKILL_REGISTRY_HOME\}\}/$ENV{SKILL_REGISTRY_HOME_CONTENT}/g;
   ' "$TEMPLATE_FILE"
 }
 
