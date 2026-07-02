@@ -1,29 +1,46 @@
 # AI Skill Registry
 
-AI Skill Registry is a Git-native library of AI skills, patterns, recipes, workflows, and checklists. Knowledge is stored as YAML metadata plus Markdown content, so it can be reviewed, versioned, validated, and later used by a prompt compiler or AI agent adapter.
+AI Skill Registry is a local prompt launcher for Codex Desktop. It assembles project context, an active mode, and your task into one prompt, saves it to /tmp, and copies it to the clipboard.
 
-This is not a SaaS, backend, database, or UI project. It is a local prompt/skill registry for Codex Desktop and a small TypeScript CLI around a declarative registry.
+This is not a SaaS, backend, database, or UI project. For daily use, it is just a small bash CLI plus Markdown prompt files.
 
-## Fast Local Prompt Commands
+## Daily Codex Workflow
 
-The fastest workflow is the bash command in `bin/skill-registry`. Run it from the project directory you are working on:
-
-```bash
-skill-registry <mode> "<task>"
-```
-
-Examples:
+Use this repo as a local prompt launcher. From the project you are working on:
 
 ```bash
-./bin/skill-registry coder "Implement Gmail ingestion retry"
-./bin/skill-registry security "Review Google OAuth token storage"
-./bin/skill-registry architect "Design source/storage abstraction"
-./bin/skill-registry marketing "Research positioning for NotesCombine"
+skill-registry coder "Implement Gmail ingestion retry"
+skill-registry security "Review Google OAuth token storage"
+skill-registry architect "Design source/storage abstraction"
+skill-registry marketing "Research positioning for NotesCombine"
 ```
 
-The CLI detects the current project with `pwd`, reads project context when these files exist, assembles a Codex prompt, saves it to `/tmp/skill-registry-codex-prompt.md`, and copies it to the macOS clipboard with `pbcopy`.
+The command assembles a prompt, saves it to `/tmp/skill-registry-codex-prompt.md`, and copies it to the macOS clipboard with `pbcopy`. Paste that prompt into Codex Desktop.
 
-Project context files:
+One-time shell shortcut:
+
+```bash
+alias skill-registry="$HOME/repositories/skill-registry/bin/skill-registry"
+```
+
+Useful commands:
+
+```bash
+skill-registry list
+skill-registry --help
+```
+
+Available modes:
+
+- `architect` - design before implementation
+- `coder` - implement code changes
+- `marketing` - research, positioning, acquisition, pricing
+- `product` - MVP and prioritization
+- `qa` - test coverage and verification
+- `reviewer` - review existing changes
+- `security` - concrete security risk review
+
+Project context is included automatically when present:
 
 - `AGENTS.md`
 - `.ai/project-context.md`
@@ -31,7 +48,7 @@ Project context files:
 - `.ai/data-privacy.md`
 - `.ai/coding-style.md`
 
-Prompt parts:
+Prompt parts are intentionally simple:
 
 1. `templates/codex-prompt.md`
 2. `skills/core.md`
@@ -39,29 +56,35 @@ Prompt parts:
 4. discovered project context
 5. your task
 
-Available modes:
+## Raycast Flow
 
-- `architect`
-- `coder`
-- `marketing`
-- `product`
-- `qa`
-- `reviewer`
-- `security`
-
-Optional shell shortcut:
+Create a Raycast Script Command per project/mode. The simplest version asks for one argument, changes into a fixed project path, and uses `coder`:
 
 ```bash
-alias skill-registry="$HOME/repositories/skill-registry/bin/skill-registry"
+#!/bin/bash
+# @raycast.schemaVersion 1
+# @raycast.title Skill Registry: Coder
+# @raycast.mode compact
+# @raycast.argument1 { "type": "text", "placeholder": "Task" }
+
+cd "$HOME/repositories/NotesCombine" || exit 1
+"$HOME/repositories/skill-registry/bin/skill-registry" coder "$1"
 ```
 
-Then from any project:
+Duplicate that script for `security`, `architect`, `qa`, or `marketing` by changing the mode argument. In practice, one Raycast command per mode is fastest.
 
-```bash
-skill-registry coder "Implement password reset"
-```
+## Repository Layout
 
-## Architecture
+For daily use, only these files matter:
+
+- `bin/skill-registry` - local bash CLI
+- `skills/core.md` - always-on base instruction
+- `skills/*.md` - mode instructions
+- `templates/codex-prompt.md` - final prompt template
+
+The older YAML/TypeScript registry remains available for future structured skill validation, but it is not required for the clipboard workflow.
+
+## Legacy Structured Registry
 
 - `skills/` contains domain expertise such as backend architecture, NestJS features, testing, and code review.
 - `skills/*.md` contains simple mode prompt files for the local copied-prompt CLI.

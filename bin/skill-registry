@@ -11,6 +11,7 @@ usage() {
   cat <<'USAGE'
 Usage:
   skill-registry <mode> "<task>"
+  skill-registry list
 
 Examples:
   skill-registry coder "Implement Gmail ingestion retry"
@@ -68,6 +69,18 @@ render_prompt() {
 }
 
 mode="${1:-}"
+
+case "$mode" in
+  list|modes)
+    available_modes
+    exit 0
+    ;;
+  help|--help|-h)
+    usage
+    exit 0
+    ;;
+esac
+
 if [ "$#" -gt 0 ]; then
   shift
 fi
@@ -103,4 +116,4 @@ if ! pbcopy < "$OUTPUT_FILE"; then
   exit 1
 fi
 
-printf 'Copied %s prompt for %s to clipboard: %s\n' "$mode" "$PROJECT_DIR" "$OUTPUT_FILE"
+printf 'Copied %s prompt -> %s\n' "$mode" "$OUTPUT_FILE"
