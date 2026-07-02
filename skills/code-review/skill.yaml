@@ -4,7 +4,7 @@ version: 0.1.0
 description: Review code for correctness, maintainability, security, and test coverage.
 category: engineering
 tags: [review, quality, correctness]
-models: [chatgpt, codex, claude-code]
+models: [chatgpt, coding-agent, claude-code]
 capabilities: [code-review, risk-analysis, testing]
 dependsOn:
   patterns: [plan-then-code, minimal-diff]

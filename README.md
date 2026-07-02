@@ -1,10 +1,10 @@
 # AI Skill Registry
 
-AI Skill Registry is a local prompt launcher for Codex Desktop. It assembles project context, an active mode, and your task into one prompt, saves it to /tmp, and copies it to the clipboard.
+AI Skill Registry is a local prompt launcher for a coding agent. It assembles project context, an active mode, and your task into one prompt, saves it to /tmp, and copies it to the clipboard.
 
 This is not a SaaS, backend, database, or UI project. For daily use, it is just a small bash CLI plus Markdown prompt files.
 
-## Daily Codex Workflow
+## Daily Coding Agent Workflow
 
 Use this repo as a local prompt launcher. From the project you are working on:
 
@@ -15,7 +15,7 @@ skill-registry architect "Design source/storage abstraction"
 skill-registry marketing "Research positioning for NotesCombine"
 ```
 
-The command assembles a prompt, saves it to `/tmp/skill-registry-codex-prompt.md`, and copies it to the macOS clipboard with `pbcopy`. Paste that prompt into Codex Desktop.
+The command assembles a prompt, saves it to `/tmp/skill-registry-agent-prompt.md`, and copies it to the macOS clipboard with `pbcopy`. Paste that prompt into a coding agent.
 
 One-time shell shortcut:
 
@@ -50,7 +50,7 @@ Project context is included automatically when present:
 
 Prompt parts are intentionally simple:
 
-1. `templates/codex-prompt.md`
+1. `templates/agent-prompt.md`
 2. `skills/core.md`
 3. `skills/<mode>.md`
 4. discovered project context
@@ -80,7 +80,7 @@ For daily use, only these files matter:
 - `bin/skill-registry` - local bash CLI
 - `skills/core.md` - always-on base instruction
 - `skills/*.md` - mode instructions
-- `templates/codex-prompt.md` - final prompt template
+- `templates/agent-prompt.md` - final prompt template
 
 The older YAML/TypeScript registry remains available for future structured skill validation, but it is not required for the clipboard workflow.
 
@@ -152,7 +152,7 @@ version: 0.1.0
 description: Review code and architecture for security risks.
 category: security
 tags: [security, review]
-models: [chatgpt, codex, claude-code]
+models: [chatgpt, coding-agent, claude-code]
 capabilities: [security-review, code-review]
 dependsOn:
   patterns: [minimal-diff]

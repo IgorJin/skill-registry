@@ -4,8 +4,8 @@ set -euo pipefail
 SKILL_REGISTRY_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_DIR="$(pwd)"
 SKILLS_DIR="$SKILL_REGISTRY_HOME/skills"
-TEMPLATE_FILE="$SKILL_REGISTRY_HOME/templates/codex-prompt.md"
-OUTPUT_FILE="/tmp/skill-registry-codex-prompt.md"
+TEMPLATE_FILE="$SKILL_REGISTRY_HOME/templates/agent-prompt.md"
+OUTPUT_FILE="/tmp/skill-registry-agent-prompt.md"
 
 usage() {
   cat <<'USAGE'

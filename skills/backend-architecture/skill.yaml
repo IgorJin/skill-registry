@@ -4,7 +4,7 @@ version: 0.1.0
 description: Design backend systems with clear boundaries, explicit contracts, and operationally safe defaults.
 category: backend
 tags: [backend, architecture, api, reliability]
-models: [chatgpt, codex, claude-code]
+models: [chatgpt, coding-agent, claude-code]
 capabilities: [architecture, planning, code-review, testing]
 dependsOn:
   patterns: [architecture-first, minimal-diff]

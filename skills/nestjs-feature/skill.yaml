@@ -4,7 +4,7 @@ version: 0.1.0
 description: Create or extend a NestJS feature using clean architecture boundaries.
 category: backend
 tags: [nestjs, backend, feature, architecture]
-models: [chatgpt, codex, claude-code]
+models: [chatgpt, coding-agent, claude-code]
 capabilities: [architecture, planning, code-generation, testing]
 dependsOn:
   skills: [backend-architecture]
