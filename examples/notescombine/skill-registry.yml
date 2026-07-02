@@ -1,0 +1,11 @@
+project: notescombine
+defaultRole: coder
+recommendedRoles:
+  implementation: coder
+  architecture: architect
+  review: reviewer
+  security: security
+  qa: qa
+contextFiles:
+  - AGENTS.md
+  - project-context.md

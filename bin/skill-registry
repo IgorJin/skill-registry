@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILLS_DIR="$ROOT_DIR/skills"
+TEMPLATE_FILE="$ROOT_DIR/templates/codex-prompt.md"
+
+usage() {
+  cat <<'USAGE'
+skill-registry - local prompt assembler for Codex Desktop
+
+Usage:
+  skill-registry roles
+  skill-registry print --role <role> [--prompt <text>] [--file <path>]
+  skill-registry copy  --role <role> [--prompt <text>] [--file <path>]
+
+Examples:
+  skill-registry roles
+  skill-registry print --role coder --prompt "Add endpoint for creating projects"
+  skill-registry copy --role architect --file task.md
+  echo "Review this change" | skill-registry copy --role reviewer
+
+Roles:
+  coder, developer, architect, security, it-security, qa, marketing, product, reviewer
+USAGE
+}
+
+normalize_role() {
+  case "$1" in
+    developer) echo "coder" ;;
+    it-security|infosec) echo "security" ;;
+    *) echo "$1" ;;
+  esac
+}
+
+role_file() {
+  local role
+  role="$(normalize_role "$1")"
+  echo "$SKILLS_DIR/$role.md"
+}
+
+list_roles() {
+  find "$SKILLS_DIR" -maxdepth 1 -type f -name '*.md' -print \
+    | sed 's#.*/##' \
+    | sed 's#\.md$##' \
+    | sort
+}
+
+read_prompt_from_stdin_if_available() {
+  if [ ! -t 0 ]; then
+    cat
+  fi
+}
+
+render_prompt() {
+  local role="$1"
+  local user_prompt="$2"
+  local file
+  file="$(role_file "$role")"
+
+  if [ ! -f "$file" ]; then
+    echo "Unknown role: $role" >&2
+    echo "Available roles:" >&2
+    list_roles >&2
+    exit 1
+  fi
+
+  CORE_CONTENT="$(cat "$SKILLS_DIR/core.md")" \
+  ROLE_CONTENT="$(cat "$file")" \
+  USER_PROMPT_CONTENT="$user_prompt" \
+  perl -0pe 's/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g; s/\{\{ROLE\}\}/$ENV{ROLE_CONTENT}/g; s/\{\{USER_PROMPT\}\}/$ENV{USER_PROMPT_CONTENT}/g' "$TEMPLATE_FILE"
+}
+
+command="${1:-}"
+if [ -z "$command" ]; then
+  usage
+  exit 1
+fi
+shift || true
+
+case "$command" in
+  roles)
+    list_roles
+    ;;
+  print|copy)
+    role=""
+    prompt=""
+    file=""
+
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --role|-r)
+          role="${2:-}"
+          shift 2
+          ;;
+        --prompt|-p)
+          prompt="${2:-}"
+          shift 2
+          ;;
+        --file|-f)
+          file="${2:-}"
+          shift 2
+          ;;
+        --help|-h)
+          usage
+          exit 0
+          ;;
+        *)
+          echo "Unknown argument: $1" >&2
+          usage >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ -z "$role" ]; then
+      echo "Missing required --role" >&2
+      usage >&2
+      exit 1
+    fi
+
+    if [ -n "$file" ]; then
+      if [ ! -f "$file" ]; then
+        echo "Prompt file does not exist: $file" >&2
+        exit 1
+      fi
+      prompt="$(cat "$file")"
+    elif [ -z "$prompt" ]; then
+      prompt="$(read_prompt_from_stdin_if_available)"
+    fi
+
+    if [ -z "$prompt" ]; then
+      echo "Missing prompt. Use --prompt, --file, or stdin." >&2
+      exit 1
+    fi
+
+    output="$(render_prompt "$role" "$prompt")"
+
+    if [ "$command" = "copy" ]; then
+      if ! command -v pbcopy >/dev/null 2>&1; then
+        echo "pbcopy is not available. Use the print command instead." >&2
+        exit 1
+      fi
+      if printf '%s\n' "$output" | pbcopy; then
+        echo "Copied prompt for role: $(normalize_role "$role")"
+      else
+        echo "Failed to copy prompt with pbcopy. Use the print command instead." >&2
+        exit 1
+      fi
+    else
+      printf '%s\n' "$output"
+    fi
+    ;;
+  --help|-h|help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: $command" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

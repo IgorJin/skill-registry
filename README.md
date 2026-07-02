@@ -2,15 +2,77 @@
 
 AI Skill Registry is a Git-native library of AI skills, patterns, recipes, workflows, and checklists. Knowledge is stored as YAML metadata plus Markdown content, so it can be reviewed, versioned, validated, and later used by a prompt compiler or AI agent adapter.
 
-This is not a SaaS, backend, database, or UI project. It is a small TypeScript CLI around a declarative registry.
+This is not a SaaS, backend, database, or UI project. It is a local prompt/skill registry for Codex Desktop and a small TypeScript CLI around a declarative registry.
+
+## Fast Local Prompt Commands
+
+The fastest workflow is the bash command in `bin/skill-registry`. It assembles a Codex prompt from:
+
+1. `skills/core.md`
+2. one role file, for example `skills/coder.md`
+3. your prompt text
+4. `templates/codex-prompt.md`
+
+No server is required.
+
+```bash
+./bin/skill-registry roles
+./bin/skill-registry print --role coder --prompt "Add endpoint for creating projects"
+./bin/skill-registry copy --role architect --prompt "Design auth module boundaries"
+```
+
+You can also pass a prompt file:
+
+```bash
+./bin/skill-registry copy --role reviewer --file task.md
+```
+
+Or use stdin:
+
+```bash
+echo "Review this implementation" | ./bin/skill-registry copy --role reviewer
+```
+
+`copy` uses macOS `pbcopy`, so the generated prompt is placed in the clipboard immediately.
+
+Available role files:
+
+- `core`
+- `coder`
+- `architect`
+- `security`
+- `qa`
+- `marketing`
+- `product`
+- `reviewer`
+
+Aliases:
+
+- `developer` maps to `coder`
+- `it-security` maps to `security`
+
+Optional shell shortcut:
+
+```bash
+alias sr="$HOME/repositories/skill-registry/bin/skill-registry"
+```
+
+Then:
+
+```bash
+sr copy --role coder --prompt "Implement password reset"
+```
 
 ## Architecture
 
 - `skills/` contains domain expertise such as backend architecture, NestJS features, testing, and code review.
+- `skills/*.md` contains simple role coverage files for local copied prompts.
 - `patterns/` contains reusable LLM work patterns such as architecture-first, plan-then-code, and minimal-diff.
 - `recipes/` contains applied task scenarios that may reference skills, patterns, checklists, and one workflow.
 - `workflows/` contains ordered step definitions for common development flows.
 - `checklists/` contains quality gates that can be attached to skills, recipes, or workflows.
+- `templates/` contains prompt assembly templates.
+- `bin/` contains local bash commands.
 - `schemas/` documents the YAML contracts as JSON Schema.
 - `src/registry/` loads, validates, and builds registry metadata.
 - `src/compiler/` deterministically merges Markdown sections into a final prompt.
