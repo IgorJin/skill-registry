@@ -6,70 +6,65 @@ This is not a SaaS, backend, database, or UI project. It is a local prompt/skill
 
 ## Fast Local Prompt Commands
 
-The fastest workflow is the bash command in `bin/skill-registry`. It assembles a Codex prompt from:
-
-1. `modes/core.md`
-2. one mode file, for example `modes/code.md`
-3. your prompt text
-4. `templates/codex-prompt.md`
-
-No server is required.
+The fastest workflow is the bash command in `bin/skill-registry`. Run it from the project directory you are working on:
 
 ```bash
-./bin/skill-registry modes
-./bin/skill-registry print --m code --prompt "Add endpoint for creating projects"
-./bin/skill-registry copy --m arc --prompt "Design auth module boundaries"
+skill-registry <mode> "<task>"
 ```
 
-You can also pass a prompt file:
+Examples:
 
 ```bash
-./bin/skill-registry copy --m rev --file task.md
+./bin/skill-registry coder "Implement Gmail ingestion retry"
+./bin/skill-registry security "Review Google OAuth token storage"
+./bin/skill-registry architect "Design source/storage abstraction"
+./bin/skill-registry marketing "Research positioning for NotesCombine"
 ```
 
-Or use stdin:
+The CLI detects the current project with `pwd`, reads project context when these files exist, assembles a Codex prompt, saves it to `/tmp/skill-registry-codex-prompt.md`, and copies it to the macOS clipboard with `pbcopy`.
 
-```bash
-echo "Review this implementation" | ./bin/skill-registry copy --m rev
-```
+Project context files:
 
-`copy` uses macOS `pbcopy`, so the generated prompt is placed in the clipboard immediately.
+- `AGENTS.md`
+- `.ai/project-context.md`
+- `.ai/architecture.md`
+- `.ai/data-privacy.md`
+- `.ai/coding-style.md`
+
+Prompt parts:
+
+1. `templates/codex-prompt.md`
+2. `skills/core.md`
+3. `skills/<mode>.md`
+4. discovered project context
+5. your task
 
 Available modes:
 
-- `code`
-- `arc`
-- `sec`
+- `architect`
+- `coder`
+- `marketing`
+- `product`
 - `qa`
-- `mar`
-- `pro`
-- `rev`
-
-Aliases:
-
-- `developer` and `coder` map to `code`
-- `architect` maps to `arc`
-- `it-security` and `security` map to `sec`
-- `marketing` maps to `mar`
-- `product` maps to `pro`
-- `reviewer` maps to `rev`
+- `reviewer`
+- `security`
 
 Optional shell shortcut:
 
 ```bash
-alias sr="$HOME/repositories/skill-registry/bin/skill-registry"
+alias skill-registry="$HOME/repositories/skill-registry/bin/skill-registry"
 ```
 
-Then:
+Then from any project:
 
 ```bash
-sr copy --m code --prompt "Implement password reset"
+skill-registry coder "Implement password reset"
 ```
 
 ## Architecture
 
 - `skills/` contains domain expertise such as backend architecture, NestJS features, testing, and code review.
-- `modes/*.md` contains simple mode coverage files for local copied prompts.
+- `skills/*.md` contains simple mode prompt files for the local copied-prompt CLI.
 - `patterns/` contains reusable LLM work patterns such as architecture-first, plan-then-code, and minimal-diff.
 - `recipes/` contains applied task scenarios that may reference skills, patterns, checklists, and one workflow.
 - `workflows/` contains ordered step definitions for common development flows.

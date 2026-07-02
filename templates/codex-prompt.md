@@ -1,17 +1,22 @@
 # Codex Prompt
 
-## Base Rules
+## Project
+
+Project directory: {{PROJECT_DIR}}
+Skill registry: {{SKILL_REGISTRY_HOME}}
+
+## Project Context
+
+{{PROJECT_CONTEXT}}
+
+## Core Instructions
 
 {{CORE}}
 
-## Mode Coverage
+## Mode Instructions
 
 {{MODE}}
 
-## User Request
+## Task
 
-{{USER_PROMPT}}
-
-## Response Contract
-
-Apply the mode coverage to the user request. Keep the user's intent intact. If implementation is needed, inspect context first, make focused changes, verify them, and summarize the result.
+{{TASK}}

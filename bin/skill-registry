@@ -1,174 +1,112 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MODES_DIR="$ROOT_DIR/modes"
-TEMPLATE_FILE="$ROOT_DIR/templates/codex-prompt.md"
+SKILL_REGISTRY_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(pwd)"
+SKILLS_DIR="$SKILL_REGISTRY_HOME/skills"
+TEMPLATE_FILE="$SKILL_REGISTRY_HOME/templates/codex-prompt.md"
+OUTPUT_FILE="/tmp/skill-registry-codex-prompt.md"
 
 usage() {
   cat <<'USAGE'
-skill-registry - local prompt assembler for Codex Desktop
-
 Usage:
-  skill-registry modes
-  skill-registry print --m <mode> [--prompt <text>] [--file <path>]
-  skill-registry copy  --m <mode> [--prompt <text>] [--file <path>]
+  skill-registry <mode> "<task>"
 
 Examples:
-  skill-registry modes
-  skill-registry print --m code --prompt "Add endpoint for creating projects"
-  skill-registry copy --m arc --file task.md
-  echo "Review this change" | skill-registry copy --m rev
-
-Modes:
-  code, arc, sec, qa, mar, pro, rev
-
-Aliases:
-  developer, coder -> code
-  architect -> arc
-  security, it-security, infosec -> sec
-  marketing -> mar
-  product -> pro
-  reviewer -> rev
+  skill-registry coder "Implement Gmail ingestion retry"
+  skill-registry security "Review Google OAuth token storage"
+  skill-registry architect "Design source/storage abstraction"
+  skill-registry marketing "Research positioning for NotesCombine"
 USAGE
 }
 
-normalize_mode() {
-  case "$1" in
-    developer|coder) echo "code" ;;
-    architect) echo "arc" ;;
-    security|it-security|infosec) echo "sec" ;;
-    marketing) echo "mar" ;;
-    product) echo "pro" ;;
-    reviewer) echo "rev" ;;
-    *) echo "$1" ;;
-  esac
-}
-
-mode_file() {
-  local mode
-  mode="$(normalize_mode "$1")"
-  echo "$MODES_DIR/$mode.md"
-}
-
-list_modes() {
-  find "$MODES_DIR" -maxdepth 1 -type f -name '*.md' ! -name 'core.md' -print \
+available_modes() {
+  find "$SKILLS_DIR" -maxdepth 1 -type f -name '*.md' ! -name 'core.md' -print \
     | sed 's#.*/##' \
     | sed 's#\.md$##' \
     | sort
 }
 
-read_prompt_from_stdin_if_available() {
-  if [ ! -t 0 ]; then
-    cat
+read_project_context() {
+  local files=(
+    "AGENTS.md"
+    ".ai/project-context.md"
+    ".ai/architecture.md"
+    ".ai/data-privacy.md"
+    ".ai/coding-style.md"
+  )
+
+  local found=0
+  local file
+  for file in "${files[@]}"; do
+    if [ -f "$PROJECT_DIR/$file" ]; then
+      found=1
+      printf '### %s\n\n' "$file"
+      cat "$PROJECT_DIR/$file"
+      printf '\n\n'
+    fi
+  done
+
+  if [ "$found" -eq 0 ]; then
+    printf 'No project context files found.\n'
   fi
 }
 
 render_prompt() {
   local mode="$1"
-  local user_prompt="$2"
-  local file
-  file="$(mode_file "$mode")"
+  local task="$2"
+  local mode_file="$SKILLS_DIR/$mode.md"
 
-  if [ ! -f "$file" ]; then
-    echo "Unknown mode: $mode" >&2
-    echo "Available modes:" >&2
-    list_modes >&2
-    exit 1
-  fi
-
-  CORE_CONTENT="$(cat "$MODES_DIR/core.md")" \
-  MODE_CONTENT="$(cat "$file")" \
-  USER_PROMPT_CONTENT="$user_prompt" \
-  perl -0pe 's/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g; s/\{\{MODE\}\}/$ENV{MODE_CONTENT}/g; s/\{\{ROLE\}\}/$ENV{MODE_CONTENT}/g; s/\{\{USER_PROMPT\}\}/$ENV{USER_PROMPT_CONTENT}/g' "$TEMPLATE_FILE"
+  PROJECT_CONTEXT_CONTENT="$(read_project_context)" \
+  CORE_CONTENT="$(cat "$SKILLS_DIR/core.md")" \
+  MODE_CONTENT="$(cat "$mode_file")" \
+  TASK_CONTENT="$task" \
+  PROJECT_DIR_CONTENT="$PROJECT_DIR" \
+  SKILL_REGISTRY_HOME_CONTENT="$SKILL_REGISTRY_HOME" \
+  perl -0pe '
+    s/\{\{PROJECT_CONTEXT\}\}/$ENV{PROJECT_CONTEXT_CONTENT}/g;
+    s/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g;
+    s/\{\{MODE\}\}/$ENV{MODE_CONTENT}/g;
+    s/\{\{TASK\}\}/$ENV{TASK_CONTENT}/g;
+    s/\{\{PROJECT_DIR\}\}/$ENV{PROJECT_DIR_CONTENT}/g;
+    s/\{\{SKILL_REGISTRY_HOME\}\}/$ENV{SKILL_REGISTRY_HOME_CONTENT}/g;
+  ' "$TEMPLATE_FILE"
 }
 
-command="${1:-}"
-if [ -z "$command" ]; then
+mode="${1:-}"
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+task="$*"
+
+if [ -z "$mode" ]; then
   usage
   exit 1
 fi
-shift || true
 
-case "$command" in
-  modes|roles)
-    list_modes
-    ;;
-  print|copy)
-    mode=""
-    prompt=""
-    file=""
+if [ -z "$task" ]; then
+  usage
+  exit 1
+fi
 
-    while [ "$#" -gt 0 ]; do
-      case "$1" in
-        --mode|--role|--m|-m|-r)
-          mode="${2:-}"
-          shift 2
-          ;;
-        --prompt|-p)
-          prompt="${2:-}"
-          shift 2
-          ;;
-        --file|-f)
-          file="${2:-}"
-          shift 2
-          ;;
-        --help|-h)
-          usage
-          exit 0
-          ;;
-        *)
-          echo "Unknown argument: $1" >&2
-          usage >&2
-          exit 1
-          ;;
-      esac
-    done
+mode_file="$SKILLS_DIR/$mode.md"
+if [ ! -f "$mode_file" ]; then
+  echo "Unknown mode: $mode" >&2
+  echo "Available modes:" >&2
+  available_modes >&2
+  exit 1
+fi
 
-    if [ -z "$mode" ]; then
-      echo "Missing required --m" >&2
-      usage >&2
-      exit 1
-    fi
+render_prompt "$mode" "$task" > "$OUTPUT_FILE"
 
-    if [ -n "$file" ]; then
-      if [ ! -f "$file" ]; then
-        echo "Prompt file does not exist: $file" >&2
-        exit 1
-      fi
-      prompt="$(cat "$file")"
-    elif [ -z "$prompt" ]; then
-      prompt="$(read_prompt_from_stdin_if_available)"
-    fi
+if ! command -v pbcopy >/dev/null 2>&1; then
+  echo "Prompt saved to $OUTPUT_FILE, but pbcopy is not available." >&2
+  exit 1
+fi
 
-    if [ -z "$prompt" ]; then
-      echo "Missing prompt. Use --prompt, --file, or stdin." >&2
-      exit 1
-    fi
+if ! pbcopy < "$OUTPUT_FILE"; then
+  echo "Prompt saved to $OUTPUT_FILE, but pbcopy failed." >&2
+  exit 1
+fi
 
-    output="$(render_prompt "$mode" "$prompt")"
-
-    if [ "$command" = "copy" ]; then
-      if ! command -v pbcopy >/dev/null 2>&1; then
-        echo "pbcopy is not available. Use the print command instead." >&2
-        exit 1
-      fi
-      if printf '%s\n' "$output" | pbcopy; then
-        echo "Copied prompt for mode: $(normalize_mode "$mode")"
-      else
-        echo "Failed to copy prompt with pbcopy. Use the print command instead." >&2
-        exit 1
-      fi
-    else
-      printf '%s\n' "$output"
-    fi
-    ;;
-  --help|-h|help)
-    usage
-    ;;
-  *)
-    echo "Unknown command: $command" >&2
-    usage >&2
-    exit 1
-    ;;
-esac
+printf 'Copied %s prompt for %s to clipboard: %s\n' "$mode" "$PROJECT_DIR" "$OUTPUT_FILE"
