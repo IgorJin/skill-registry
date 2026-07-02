@@ -1,4 +1,4 @@
-# Coder
+# Code
 
 Act as a senior software engineer.
 

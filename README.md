@@ -8,48 +8,51 @@ This is not a SaaS, backend, database, or UI project. It is a local prompt/skill
 
 The fastest workflow is the bash command in `bin/skill-registry`. It assembles a Codex prompt from:
 
-1. `skills/core.md`
-2. one role file, for example `skills/coder.md`
+1. `modes/core.md`
+2. one mode file, for example `modes/code.md`
 3. your prompt text
 4. `templates/codex-prompt.md`
 
 No server is required.
 
 ```bash
-./bin/skill-registry roles
-./bin/skill-registry print --role coder --prompt "Add endpoint for creating projects"
-./bin/skill-registry copy --role architect --prompt "Design auth module boundaries"
+./bin/skill-registry modes
+./bin/skill-registry print --m code --prompt "Add endpoint for creating projects"
+./bin/skill-registry copy --m arc --prompt "Design auth module boundaries"
 ```
 
 You can also pass a prompt file:
 
 ```bash
-./bin/skill-registry copy --role reviewer --file task.md
+./bin/skill-registry copy --m rev --file task.md
 ```
 
 Or use stdin:
 
 ```bash
-echo "Review this implementation" | ./bin/skill-registry copy --role reviewer
+echo "Review this implementation" | ./bin/skill-registry copy --m rev
 ```
 
 `copy` uses macOS `pbcopy`, so the generated prompt is placed in the clipboard immediately.
 
-Available role files:
+Available modes:
 
-- `core`
-- `coder`
-- `architect`
-- `security`
+- `code`
+- `arc`
+- `sec`
 - `qa`
-- `marketing`
-- `product`
-- `reviewer`
+- `mar`
+- `pro`
+- `rev`
 
 Aliases:
 
-- `developer` maps to `coder`
-- `it-security` maps to `security`
+- `developer` and `coder` map to `code`
+- `architect` maps to `arc`
+- `it-security` and `security` map to `sec`
+- `marketing` maps to `mar`
+- `product` maps to `pro`
+- `reviewer` maps to `rev`
 
 Optional shell shortcut:
 
@@ -60,13 +63,13 @@ alias sr="$HOME/repositories/skill-registry/bin/skill-registry"
 Then:
 
 ```bash
-sr copy --role coder --prompt "Implement password reset"
+sr copy --m code --prompt "Implement password reset"
 ```
 
 ## Architecture
 
 - `skills/` contains domain expertise such as backend architecture, NestJS features, testing, and code review.
-- `skills/*.md` contains simple role coverage files for local copied prompts.
+- `modes/*.md` contains simple mode coverage files for local copied prompts.
 - `patterns/` contains reusable LLM work patterns such as architecture-first, plan-then-code, and minimal-diff.
 - `recipes/` contains applied task scenarios that may reference skills, patterns, checklists, and one workflow.
 - `workflows/` contains ordered step definitions for common development flows.

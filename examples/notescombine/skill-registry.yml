@@ -1,10 +1,10 @@
 project: notescombine
-defaultRole: coder
-recommendedRoles:
-  implementation: coder
-  architecture: architect
-  review: reviewer
-  security: security
+defaultMode: code
+recommendedModes:
+  implementation: code
+  architecture: arc
+  review: rev
+  security: sec
   qa: qa
 contextFiles:
   - AGENTS.md

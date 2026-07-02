@@ -1,4 +1,4 @@
-# Architect
+# Architecture
 
 Act as a pragmatic software architect.
 

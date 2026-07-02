@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$ROOT_DIR/skills"
+MODES_DIR="$ROOT_DIR/modes"
 TEMPLATE_FILE="$ROOT_DIR/templates/codex-prompt.md"
 
 usage() {
@@ -10,37 +10,49 @@ usage() {
 skill-registry - local prompt assembler for Codex Desktop
 
 Usage:
-  skill-registry roles
-  skill-registry print --role <role> [--prompt <text>] [--file <path>]
-  skill-registry copy  --role <role> [--prompt <text>] [--file <path>]
+  skill-registry modes
+  skill-registry print --m <mode> [--prompt <text>] [--file <path>]
+  skill-registry copy  --m <mode> [--prompt <text>] [--file <path>]
 
 Examples:
-  skill-registry roles
-  skill-registry print --role coder --prompt "Add endpoint for creating projects"
-  skill-registry copy --role architect --file task.md
-  echo "Review this change" | skill-registry copy --role reviewer
+  skill-registry modes
+  skill-registry print --m code --prompt "Add endpoint for creating projects"
+  skill-registry copy --m arc --file task.md
+  echo "Review this change" | skill-registry copy --m rev
 
-Roles:
-  coder, developer, architect, security, it-security, qa, marketing, product, reviewer
+Modes:
+  code, arc, sec, qa, mar, pro, rev
+
+Aliases:
+  developer, coder -> code
+  architect -> arc
+  security, it-security, infosec -> sec
+  marketing -> mar
+  product -> pro
+  reviewer -> rev
 USAGE
 }
 
-normalize_role() {
+normalize_mode() {
   case "$1" in
-    developer) echo "coder" ;;
-    it-security|infosec) echo "security" ;;
+    developer|coder) echo "code" ;;
+    architect) echo "arc" ;;
+    security|it-security|infosec) echo "sec" ;;
+    marketing) echo "mar" ;;
+    product) echo "pro" ;;
+    reviewer) echo "rev" ;;
     *) echo "$1" ;;
   esac
 }
 
-role_file() {
-  local role
-  role="$(normalize_role "$1")"
-  echo "$SKILLS_DIR/$role.md"
+mode_file() {
+  local mode
+  mode="$(normalize_mode "$1")"
+  echo "$MODES_DIR/$mode.md"
 }
 
-list_roles() {
-  find "$SKILLS_DIR" -maxdepth 1 -type f -name '*.md' -print \
+list_modes() {
+  find "$MODES_DIR" -maxdepth 1 -type f -name '*.md' ! -name 'core.md' -print \
     | sed 's#.*/##' \
     | sed 's#\.md$##' \
     | sort
@@ -53,22 +65,22 @@ read_prompt_from_stdin_if_available() {
 }
 
 render_prompt() {
-  local role="$1"
+  local mode="$1"
   local user_prompt="$2"
   local file
-  file="$(role_file "$role")"
+  file="$(mode_file "$mode")"
 
   if [ ! -f "$file" ]; then
-    echo "Unknown role: $role" >&2
-    echo "Available roles:" >&2
-    list_roles >&2
+    echo "Unknown mode: $mode" >&2
+    echo "Available modes:" >&2
+    list_modes >&2
     exit 1
   fi
 
-  CORE_CONTENT="$(cat "$SKILLS_DIR/core.md")" \
-  ROLE_CONTENT="$(cat "$file")" \
+  CORE_CONTENT="$(cat "$MODES_DIR/core.md")" \
+  MODE_CONTENT="$(cat "$file")" \
   USER_PROMPT_CONTENT="$user_prompt" \
-  perl -0pe 's/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g; s/\{\{ROLE\}\}/$ENV{ROLE_CONTENT}/g; s/\{\{USER_PROMPT\}\}/$ENV{USER_PROMPT_CONTENT}/g' "$TEMPLATE_FILE"
+  perl -0pe 's/\{\{CORE\}\}/$ENV{CORE_CONTENT}/g; s/\{\{MODE\}\}/$ENV{MODE_CONTENT}/g; s/\{\{ROLE\}\}/$ENV{MODE_CONTENT}/g; s/\{\{USER_PROMPT\}\}/$ENV{USER_PROMPT_CONTENT}/g' "$TEMPLATE_FILE"
 }
 
 command="${1:-}"
@@ -79,18 +91,18 @@ fi
 shift || true
 
 case "$command" in
-  roles)
-    list_roles
+  modes|roles)
+    list_modes
     ;;
   print|copy)
-    role=""
+    mode=""
     prompt=""
     file=""
 
     while [ "$#" -gt 0 ]; do
       case "$1" in
-        --role|-r)
-          role="${2:-}"
+        --mode|--role|--m|-m|-r)
+          mode="${2:-}"
           shift 2
           ;;
         --prompt|-p)
@@ -113,8 +125,8 @@ case "$command" in
       esac
     done
 
-    if [ -z "$role" ]; then
-      echo "Missing required --role" >&2
+    if [ -z "$mode" ]; then
+      echo "Missing required --m" >&2
       usage >&2
       exit 1
     fi
@@ -134,7 +146,7 @@ case "$command" in
       exit 1
     fi
 
-    output="$(render_prompt "$role" "$prompt")"
+    output="$(render_prompt "$mode" "$prompt")"
 
     if [ "$command" = "copy" ]; then
       if ! command -v pbcopy >/dev/null 2>&1; then
@@ -142,7 +154,7 @@ case "$command" in
         exit 1
       fi
       if printf '%s\n' "$output" | pbcopy; then
-        echo "Copied prompt for role: $(normalize_role "$role")"
+        echo "Copied prompt for mode: $(normalize_mode "$mode")"
       else
         echo "Failed to copy prompt with pbcopy. Use the print command instead." >&2
         exit 1
