@@ -1,6 +1,6 @@
-# AI Skill Registry
+# AI Skill
 
-AI Skill Registry is a local prompt launcher for a coding agent. It assembles project context, an active mode, and your task into one prompt, saves it to /tmp, and copies it to the clipboard.
+AI Skill is a local prompt launcher for a coding agent. It assembles project context, an active mode, and your task into one prompt, saves it to /tmp, and copies it to the clipboard.
 
 This is not a SaaS, backend, database, or UI project. For daily use, it is just a small bash CLI plus Markdown prompt files.
 
@@ -9,26 +9,25 @@ This is not a SaaS, backend, database, or UI project. For daily use, it is just 
 Use this repo as a local prompt launcher. From the project you are working on:
 
 ```bash
-skill-registry coder "Implement Gmail ingestion retry"
-skill-registry security "Review Google OAuth token storage"
-skill-registry architect "Design source/storage abstraction"
-skill-registry marketing "Research positioning for NotesCombine"
+skill coder "Implement Gmail ingestion retry"
+skill security "Review Google OAuth token storage"
+skill architect "Design source/storage abstraction"
+skill marketing "Research positioning for NotesCombine"
 ```
 
-The command assembles a prompt, saves it to `/tmp/skill-registry-agent-prompt.md`, and copies it to the macOS clipboard with `pbcopy`. Paste that prompt into a coding agent.
+The command assembles a prompt, saves it to `/tmp/skill-agent-prompt.md`, and copies it to the macOS clipboard with `pbcopy`. Paste that prompt into a coding agent.
 
 One-time shell shortcut:
 
 ```bash
-alias skill-registry="$HOME/repositories/skill-registry/bin/skill-registry"
-alias skill="$HOME/repositories/skill-registry/bin/skill"
+alias skill="$HOME/repositories/skill/bin/skill"
 ```
 
 Useful commands:
 
 ```bash
-skill-registry list
-skill-registry --help
+skill list
+skill --help
 skill task current
 ```
 
@@ -90,12 +89,12 @@ Create a Raycast Script Command per project/mode. The simplest version asks for 
 ```bash
 #!/bin/bash
 # @raycast.schemaVersion 1
-# @raycast.title Skill Registry: Coder
+# @raycast.title Skill: Coder
 # @raycast.mode compact
 # @raycast.argument1 { "type": "text", "placeholder": "Task" }
 
 cd "$HOME/repositories/NotesCombine" || exit 1
-"$HOME/repositories/skill-registry/bin/skill-registry" coder "$1"
+"$HOME/repositories/skill/bin/skill" coder "$1"
 ```
 
 Duplicate that script for `security`, `architect`, `qa`, or `marketing` by changing the mode argument. In practice, one Raycast command per mode is fastest.
@@ -104,8 +103,7 @@ Duplicate that script for `security`, `architect`, `qa`, or `marketing` by chang
 
 For daily use, only these files matter:
 
-- `bin/skill-registry` - local prompt launcher
-- `bin/skill` - task workflow CLI
+- `bin/skill` - local prompt launcher and task workflow CLI
 - `skills/core.md` - always-on base instruction
 - `skills/*.md` - mode instructions
 - `templates/agent-prompt.md` - final prompt template
@@ -137,10 +135,10 @@ pnpm build
 ## Commands
 
 ```bash
-pnpm skill-registry validate
-pnpm skill-registry list
-pnpm skill-registry compile --skill nestjs-feature
-pnpm skill-registry build
+pnpm skill validate
+pnpm skill list
+pnpm skill compile --skill nestjs-feature
+pnpm skill build
 ```
 
 Package scripts are also available:
@@ -193,7 +191,7 @@ entrypoint: prompt.md
 ## Compile Example
 
 ```bash
-pnpm skill-registry compile --skill nestjs-feature
+pnpm skill compile --skill nestjs-feature
 ```
 
 The compiler emits:

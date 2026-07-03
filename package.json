@@ -1,14 +1,11 @@
 {
-  "name": "ai-skill-registry",
+  "name": "ai-skill",
   "version": "0.1.0",
   "description": "Markdown/YAML-based AI skill registry with a minimal TypeScript CLI.",
   "type": "module",
-  "bin": {
-    "skill-registry": "./dist/cli.js"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "skill-registry": "node dist/cli.js",
+    "skill": "node dist/cli.js",
     "validate": "node dist/cli.js validate",
     "list": "node dist/cli.js list",
     "compile": "node dist/cli.js compile",

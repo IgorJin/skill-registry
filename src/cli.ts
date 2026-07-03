@@ -9,8 +9,8 @@ import { compileSkillPrompt } from "./compiler/compile-prompt.js";
 const program = new Command();
 
 program
-  .name("skill-registry")
-  .description("Validate, list, build, and compile the AI Skill Registry.")
+  .name("skill")
+  .description("Validate, list, build, and compile the AI Skill.")
   .version("0.1.0");
 
 program.command("validate").description("Validate YAML files, required files, and cross-references.").action(runValidate);

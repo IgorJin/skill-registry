@@ -1,25 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SKILL_REGISTRY_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILL_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_DIR="$(pwd)"
-TEMPLATE_FILE="$SKILL_REGISTRY_HOME/templates/agent-prompt.md"
-OUTPUT_FILE="/tmp/skill-registry-agent-prompt.md"
+SKILLS_DIR="$SKILL_HOME/skills"
+TEMPLATE_FILE="$SKILL_HOME/templates/agent-prompt.md"
+OUTPUT_FILE="/tmp/skill-agent-prompt.md"
 CURRENT_FILE="$PROJECT_DIR/.skill/current-task"
 TASK_DIRS=("tasks/inbox" "tasks/backlog" "tasks/active" "tasks/done")
 
 usage() {
   cat <<'USAGE'
 Usage:
+  skill <mode> "<task>"
+  skill list
   skill task use <TASK-ID>
   skill task current
   skill task finish <TASK-ID>
 
 Examples:
+  skill coder "Implement Gmail ingestion retry"
+  skill security "Review Google OAuth token storage"
+  skill architect "Design source/storage abstraction"
+  skill marketing "Research positioning for NotesCombine"
   skill task use NC-0001
-  skill task current
-  skill task finish NC-0001
 USAGE
+}
+
+available_modes() {
+  find "$SKILLS_DIR" -maxdepth 1 -type f -name "*.md" ! -name "core.md" -print \
+    | sed 's#.*/##' \
+    | sed 's#\.md$##' \
+    | sort
 }
 
 read_project_context() {
@@ -45,6 +57,33 @@ read_project_context() {
   if [ "$found" -eq 0 ]; then
     printf 'No project context files found.\n'
   fi
+}
+
+copy_output() {
+  if ! command -v pbcopy >/dev/null 2>&1; then
+    echo "Prompt saved to $OUTPUT_FILE, but pbcopy is not available." >&2
+    exit 1
+  fi
+
+  if ! pbcopy < "$OUTPUT_FILE"; then
+    echo "Prompt saved to $OUTPUT_FILE, but pbcopy failed." >&2
+    exit 1
+  fi
+}
+
+render_mode_prompt() {
+  local mode="$1"
+  local task="$2"
+  local mode_file="$SKILLS_DIR/$mode.md"
+
+  ACTIVE_SKILLS_CONTENT="$(printf '### Core\n\n%s\n\n### %s\n\n%s\n' "$(cat "$SKILLS_DIR/core.md")" "$mode" "$(cat "$mode_file")")" \
+  PROJECT_CONTEXT_CONTENT="$(read_project_context)" \
+  TASK_CONTENT="$task" \
+  perl -0pe '
+    s/\{\{PROJECT_CONTEXT\}\}/$ENV{PROJECT_CONTEXT_CONTENT}/g;
+    s/\{\{ACTIVE_SKILLS\}\}/$ENV{ACTIVE_SKILLS_CONTENT}/g;
+    s/\{\{TASK\}\}/$ENV{TASK_CONTENT}/g;
+  ' "$TEMPLATE_FILE"
 }
 
 find_task_file() {
@@ -100,13 +139,13 @@ activate_task() {
   esac
 }
 
-render_prompt() {
+render_task_prompt() {
   local method="$1"
   local task_file="$2"
   local task_id="$3"
-  local method_file="$SKILL_REGISTRY_HOME/methods/task/$method.md"
+  local method_file="$SKILL_HOME/methods/task/$method.md"
 
-  ACTIVE_SKILLS_CONTENT="$(printf '### Core\n\n%s\n\n### Task Manager\n\n%s\n\n### Method: task/%s\n\n%s\n\n### Task file\n\nPath: %s\n\n%s\n' "$(cat "$SKILL_REGISTRY_HOME/skills/core.md")" "$(cat "$SKILL_REGISTRY_HOME/objects/task-manager.md")" "$method" "$(cat "$method_file")" "$task_file" "$(cat "$task_file")")" \
+  ACTIVE_SKILLS_CONTENT="$(printf '### Core\n\n%s\n\n### Task Manager\n\n%s\n\n### Method: task/%s\n\n%s\n\n### Task file\n\nPath: %s\n\n%s\n' "$(cat "$SKILL_HOME/skills/core.md")" "$(cat "$SKILL_HOME/objects/task-manager.md")" "$method" "$(cat "$method_file")" "$task_file" "$(cat "$task_file")")" \
   PROJECT_CONTEXT_CONTENT="$(read_project_context)" \
   TASK_CONTENT="Task command: task $method $task_id" \
   perl -0pe '
@@ -116,58 +155,91 @@ render_prompt() {
   ' "$TEMPLATE_FILE"
 }
 
-copy_prompt() {
+copy_mode_prompt() {
+  local mode="$1"
+  local task="$2"
+  render_mode_prompt "$mode" "$task" > "$OUTPUT_FILE"
+  copy_output
+  printf 'Copied %s prompt -> %s\n' "$mode" "$OUTPUT_FILE"
+}
+
+copy_task_prompt() {
   local method="$1"
   local task_file="$2"
   local task_id="$3"
-
-  render_prompt "$method" "$task_file" "$task_id" > "$OUTPUT_FILE"
-
-  if ! command -v pbcopy >/dev/null 2>&1; then
-    echo "Prompt saved to $OUTPUT_FILE, but pbcopy is not available." >&2
-    exit 1
-  fi
-
-  if ! pbcopy < "$OUTPUT_FILE"; then
-    echo "Prompt saved to $OUTPUT_FILE, but pbcopy failed." >&2
-    exit 1
-  fi
-
+  render_task_prompt "$method" "$task_file" "$task_id" > "$OUTPUT_FILE"
+  copy_output
   printf 'Copied task %s prompt for %s -> %s\n' "$method" "$task_id" "$OUTPUT_FILE"
 }
 
-command="${1:-}"
-action="${2:-}"
-id="${3:-}"
+handle_task() {
+  local action="${1:-}"
+  local id="${2:-}"
+  local file
 
-if [ "$command" != "task" ]; then
+  case "$action" in
+    use)
+      if [ -z "$id" ]; then usage; exit 1; fi
+      file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
+      file="$(activate_task "$file")"
+      mkdir -p "$(dirname "$CURRENT_FILE")"
+      printf '%s\n' "$file" > "$CURRENT_FILE"
+      copy_task_prompt "start" "$file" "$id"
+      ;;
+    current)
+      file="$(current_task_file)" || { echo "No current task. Run: skill task use <TASK-ID>" >&2; exit 1; }
+      id="$(basename "$file" | sed -E 's/^([A-Za-z]+-[0-9]+).*/\1/')"
+      copy_task_prompt "start" "$file" "$id"
+      ;;
+    finish)
+      if [ -z "$id" ]; then usage; exit 1; fi
+      file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
+      mkdir -p "$(dirname "$CURRENT_FILE")"
+      printf '%s\n' "$file" > "$CURRENT_FILE"
+      copy_task_prompt "finish" "$file" "$id"
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+command="${1:-}"
+
+case "$command" in
+  list|modes)
+    available_modes
+    exit 0
+    ;;
+  help|--help|-h|"")
+    usage
+    exit 0
+    ;;
+  task)
+    shift || true
+    handle_task "$@"
+    exit 0
+    ;;
+esac
+
+mode="$command"
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+task="$*"
+
+if [ -z "$task" ]; then
   usage
   exit 1
 fi
 
-case "$action" in
-  use)
-    if [ -z "$id" ]; then usage; exit 1; fi
-    file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
-    file="$(activate_task "$file")"
-    mkdir -p "$(dirname "$CURRENT_FILE")"
-    printf '%s\n' "$file" > "$CURRENT_FILE"
-    copy_prompt "start" "$file" "$id"
-    ;;
-  current)
-    file="$(current_task_file)" || { echo "No current task. Run: skill task use <TASK-ID>" >&2; exit 1; }
-    id="$(basename "$file" | sed -E 's/^([A-Za-z]+-[0-9]+).*/\1/')"
-    copy_prompt "start" "$file" "$id"
-    ;;
-  finish)
-    if [ -z "$id" ]; then usage; exit 1; fi
-    file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
-    mkdir -p "$(dirname "$CURRENT_FILE")"
-    printf '%s\n' "$file" > "$CURRENT_FILE"
-    copy_prompt "finish" "$file" "$id"
-    ;;
-  *)
-    usage
-    exit 1
-    ;;
-esac
+mode_file="$SKILLS_DIR/$mode.md"
+if [ ! -f "$mode_file" ]; then
+  echo "Unknown mode: $mode" >&2
+  echo "Available modes:" >&2
+  available_modes >&2
+  exit 1
+fi
+
+copy_mode_prompt "$mode" "$task"
