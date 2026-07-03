@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SKILL_REGISTRY_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(pwd)"
+TEMPLATE_FILE="$SKILL_REGISTRY_HOME/templates/agent-prompt.md"
+OUTPUT_FILE="/tmp/skill-registry-agent-prompt.md"
+CURRENT_FILE="$PROJECT_DIR/.skill/current-task"
+TASK_DIRS=("tasks/inbox" "tasks/backlog" "tasks/active" "tasks/done")
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  skill task use <TASK-ID>
+  skill task current
+  skill task finish <TASK-ID>
+
+Examples:
+  skill task use NC-0001
+  skill task current
+  skill task finish NC-0001
+USAGE
+}
+
+read_project_context() {
+  local files=(
+    "AGENTS.md"
+    ".ai/project-context.md"
+    ".ai/architecture.md"
+    ".ai/data-privacy.md"
+    ".ai/coding-style.md"
+  )
+
+  local found=0
+  local file
+  for file in "${files[@]}"; do
+    if [ -f "$PROJECT_DIR/$file" ]; then
+      found=1
+      printf '### %s\n\n' "$file"
+      cat "$PROJECT_DIR/$file"
+      printf '\n\n'
+    fi
+  done
+
+  if [ "$found" -eq 0 ]; then
+    printf 'No project context files found.\n'
+  fi
+}
+
+find_task_file() {
+  local id="$1"
+  local dir
+  local match
+  for dir in "${TASK_DIRS[@]}"; do
+    if [ -d "$PROJECT_DIR/$dir" ]; then
+      match="$(find "$PROJECT_DIR/$dir" -maxdepth 1 -type f -name "$id*.md" | sort | head -n 1)"
+      if [ -n "$match" ]; then
+        printf '%s\n' "$match"
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
+current_task_file() {
+  if [ -f "$CURRENT_FILE" ]; then
+    local current
+    current="$(cat "$CURRENT_FILE")"
+    if [ -f "$current" ]; then
+      printf '%s\n' "$current"
+      return 0
+    fi
+  fi
+
+  if [ -d "$PROJECT_DIR/tasks/active" ]; then
+    local count
+    count="$(find "$PROJECT_DIR/tasks/active" -maxdepth 1 -type f -name "*.md" | wc -l | tr -d " ")"
+    if [ "$count" = "1" ]; then
+      find "$PROJECT_DIR/tasks/active" -maxdepth 1 -type f -name "*.md" | head -n 1
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+activate_task() {
+  local file="$1"
+  case "$file" in
+    "$PROJECT_DIR/tasks/inbox/"*|"$PROJECT_DIR/tasks/backlog/"*)
+      mkdir -p "$PROJECT_DIR/tasks/active"
+      local target="$PROJECT_DIR/tasks/active/$(basename "$file")"
+      mv "$file" "$target"
+      printf '%s\n' "$target"
+      ;;
+    *)
+      printf '%s\n' "$file"
+      ;;
+  esac
+}
+
+render_prompt() {
+  local method="$1"
+  local task_file="$2"
+  local task_id="$3"
+  local method_file="$SKILL_REGISTRY_HOME/methods/task/$method.md"
+
+  ACTIVE_SKILLS_CONTENT="$(printf '### Core\n\n%s\n\n### Task Manager\n\n%s\n\n### Method: task/%s\n\n%s\n\n### Task file\n\nPath: %s\n\n%s\n' "$(cat "$SKILL_REGISTRY_HOME/skills/core.md")" "$(cat "$SKILL_REGISTRY_HOME/objects/task-manager.md")" "$method" "$(cat "$method_file")" "$task_file" "$(cat "$task_file")")" \
+  PROJECT_CONTEXT_CONTENT="$(read_project_context)" \
+  TASK_CONTENT="Task command: task $method $task_id" \
+  perl -0pe '
+    s/\{\{PROJECT_CONTEXT\}\}/$ENV{PROJECT_CONTEXT_CONTENT}/g;
+    s/\{\{ACTIVE_SKILLS\}\}/$ENV{ACTIVE_SKILLS_CONTENT}/g;
+    s/\{\{TASK\}\}/$ENV{TASK_CONTENT}/g;
+  ' "$TEMPLATE_FILE"
+}
+
+copy_prompt() {
+  local method="$1"
+  local task_file="$2"
+  local task_id="$3"
+
+  render_prompt "$method" "$task_file" "$task_id" > "$OUTPUT_FILE"
+
+  if ! command -v pbcopy >/dev/null 2>&1; then
+    echo "Prompt saved to $OUTPUT_FILE, but pbcopy is not available." >&2
+    exit 1
+  fi
+
+  if ! pbcopy < "$OUTPUT_FILE"; then
+    echo "Prompt saved to $OUTPUT_FILE, but pbcopy failed." >&2
+    exit 1
+  fi
+
+  printf 'Copied task %s prompt for %s -> %s\n' "$method" "$task_id" "$OUTPUT_FILE"
+}
+
+command="${1:-}"
+action="${2:-}"
+id="${3:-}"
+
+if [ "$command" != "task" ]; then
+  usage
+  exit 1
+fi
+
+case "$action" in
+  use)
+    if [ -z "$id" ]; then usage; exit 1; fi
+    file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
+    file="$(activate_task "$file")"
+    mkdir -p "$(dirname "$CURRENT_FILE")"
+    printf '%s\n' "$file" > "$CURRENT_FILE"
+    copy_prompt "start" "$file" "$id"
+    ;;
+  current)
+    file="$(current_task_file)" || { echo "No current task. Run: skill task use <TASK-ID>" >&2; exit 1; }
+    id="$(basename "$file" | sed -E 's/^([A-Za-z]+-[0-9]+).*/\1/')"
+    copy_prompt "start" "$file" "$id"
+    ;;
+  finish)
+    if [ -z "$id" ]; then usage; exit 1; fi
+    file="$(find_task_file "$id")" || { echo "Task not found: $id" >&2; exit 1; }
+    mkdir -p "$(dirname "$CURRENT_FILE")"
+    printf '%s\n' "$file" > "$CURRENT_FILE"
+    copy_prompt "finish" "$file" "$id"
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

@@ -21,6 +21,7 @@ One-time shell shortcut:
 
 ```bash
 alias skill-registry="$HOME/repositories/skill-registry/bin/skill-registry"
+alias skill="$HOME/repositories/skill-registry/bin/skill"
 ```
 
 Useful commands:
@@ -28,6 +29,7 @@ Useful commands:
 ```bash
 skill-registry list
 skill-registry --help
+skill task current
 ```
 
 Available modes:
@@ -56,6 +58,31 @@ Prompt parts are intentionally simple:
 4. discovered project context
 5. your task
 
+## Task Manager Workflow
+
+Use `bin/skill` when a project has markdown tasks under:
+
+- `tasks/inbox/`
+- `tasks/backlog/`
+- `tasks/active/`
+- `tasks/done/`
+
+Task files are found by id prefix, for example `NC-0001`.
+
+```bash
+skill task use NC-0001
+skill task current
+skill task finish NC-0001
+```
+
+Behavior:
+
+- `skill task use NC-0001` finds the task, moves it from `inbox` or `backlog` to `active`, marks it current, and copies a start prompt.
+- `skill task current` copies a start prompt for the current task.
+- `skill task finish NC-0001` copies a finish prompt that tells the agent to update the task with changed files, diff summary, tests, manual verification, env/deploy notes, and follow-up before moving it to `done`.
+
+Task format lives in `objects/task-manager.md`. Task methods live in `methods/task/`.
+
 ## Raycast Flow
 
 Create a Raycast Script Command per project/mode. The simplest version asks for one argument, changes into a fixed project path, and uses `coder`:
@@ -77,10 +104,12 @@ Duplicate that script for `security`, `architect`, `qa`, or `marketing` by chang
 
 For daily use, only these files matter:
 
-- `bin/skill-registry` - local bash CLI
+- `bin/skill-registry` - local prompt launcher
+- `bin/skill` - task workflow CLI
 - `skills/core.md` - always-on base instruction
 - `skills/*.md` - mode instructions
 - `templates/agent-prompt.md` - final prompt template
+- `objects/task-manager.md` and `methods/task/*.md` - markdown task workflow prompts
 
 The older YAML/TypeScript registry remains available for future structured skill validation, but it is not required for the clipboard workflow.
 

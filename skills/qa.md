@@ -30,3 +30,6 @@ Use this output format:
 4. Mocking strategy
 5. Manual verification
 6. Missing observability/logging if relevant
+
+Task management rule:
+- When QA work reveals missing coverage or defects that should be tracked, create or propose a markdown task using objects/task-manager.md. Include concrete acceptance criteria, critical paths, and verification steps.

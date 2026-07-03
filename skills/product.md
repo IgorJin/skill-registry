@@ -20,3 +20,6 @@ Use this output format:
 5. Metrics
 6. Risks
 7. Recommendation
+
+Task management rule:
+- When a product request creates actionable implementation work, create or propose a markdown task using objects/task-manager.md. Keep the task MVP-focused, with clear acceptance criteria and non-goals.
